@@ -15,27 +15,48 @@ class ApiVideoMessengerLiveStreamPlatform extends ApiVideoLiveStreamPlatform
   final CameraProviderHostApi cameraProviderHostApi = CameraProviderHostApi();
 
   late ApiVideoLiveStreamEventsListener? _eventsListener;
+  bool _isApiSetUp = false;
 
   ApiVideoMessengerLiveStreamPlatform() {
-    LiveStreamFlutterApi.setUp(this);
+    // Move the setup to a method that can be called after binding initialization
+    // We'll call this in initialize() to ensure bindings are ready
+  }
+
+  void _ensureApiSetUp() {
+    if (!_isApiSetUp) {
+      LiveStreamFlutterApi.setUp(this);
+      _isApiSetUp = true;
+    }
   }
 
   /// Registers this class as the default instance of [PathProviderPlatform].
   static void registerWith() {
+    // Make sure we have bindings initialized before registering
     ApiVideoLiveStreamPlatform.instance = ApiVideoMessengerLiveStreamPlatform();
   }
 
   @override
   Future<List<CameraInfo>> getAvailableCameraInfos() async {
+    _ensureBindingsInitialized();
+    _ensureApiSetUp();
+
     final cameraIds = await cameraProviderHostApi.getAvailableCameraIds();
     final cameraInfoBuilders =
-        cameraIds.map((id) => MessengerCameraInfoBuilder(id)).toList();
+    cameraIds.map((id) => MessengerCameraInfoBuilder(id)).toList();
 
     return Future.wait(cameraInfoBuilders.map((builder) => builder.create()));
   }
 
+  void _ensureBindingsInitialized() {
+    // Ensure Flutter bindings are initialized
+    WidgetsFlutterBinding.ensureInitialized();
+  }
+
   @override
   Future<int?> initialize() async {
+    _ensureBindingsInitialized();
+    _ensureApiSetUp();
+
     return liveStreamHostApi.create();
   }
 

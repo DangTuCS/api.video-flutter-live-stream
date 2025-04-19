@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:apivideo_live_stream/apivideo_live_stream.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 
 import 'listeners.dart';
@@ -13,6 +14,8 @@ ApiVideoLiveStreamPlatform get _platform {
 
 /// Gets list of available cameras.
 Future<List<CameraInfo>> getAvailableCameraInfos() async {
+  // Ensure bindings are initialized before accessing platform features
+  WidgetsFlutterBinding.ensureInitialized();
   return _platform.getAvailableCameraInfos();
 }
 
@@ -42,14 +45,20 @@ class ApiVideoLiveStreamController {
   /// If [initialCameraId] is not provided, the first back camera will be used.
   ApiVideoLiveStreamController(
       {required AudioConfig initialAudioConfig,
-      required VideoConfig initialVideoConfig,
-      String? initialCameraId = null})
+        required VideoConfig initialVideoConfig,
+        String? initialCameraId = null})
       : _initialVideoConfig = initialVideoConfig,
         _initialAudioConfig = initialAudioConfig,
-        _initialCameraId = initialCameraId {}
+        _initialCameraId = initialCameraId {
+    // Ensure Flutter bindings are initialized at creation time
+    WidgetsFlutterBinding.ensureInitialized();
+  }
 
   /// Creates a new live stream instance with initial audio and video configurations.
   Future<void> initialize() async {
+    // Double-check bindings are initialized before platform operations
+    WidgetsFlutterBinding.ensureInitialized();
+
     _platform.setListener(_eventsListenersManager);
     _textureId = await _platform.initialize() ?? kUninitializedTextureId;
 
@@ -100,7 +109,7 @@ class ApiVideoLiveStreamController {
   /// Starts the live stream to the specified "[url]/[streamKey]".
   Future<void> startStreaming(
       {required String streamKey,
-      String url = "rtmp://broadcast.api.video/s/"}) async {
+        String url = "rtmp://broadcast.api.video/s/"}) async {
     return _platform.startStreaming(streamKey: streamKey, url: url);
   }
 
