@@ -13,7 +13,7 @@ API Video live stream Flutter plugin bridging the native iOS SDK.
 
   s.platform         = :ios, '13.0'
   s.swift_version    = '5.0'
-  s.static_framework = true
+  # s.static_framework = true
   s.requires_arc     = true
 
   # Ensure sources are picked up and headers are exported for the module map.
